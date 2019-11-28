@@ -1,0 +1,13 @@
+{"Registrations":[ 
+    {
+      "component": { 
+       "type": "git", 
+       "git": { 
+         "repositoryUrl": "https://github.com/stedolan/jq", 
+         "commitHash": "37b2d2129e5ff5d79c0f4ef08b031fa257b0bf28" 
+         }
+       }
+    }
+ ],
+ "Version": 1
+}

@@ -1,0 +1,11 @@
+﻿image:
+  repository: <#= environment.ACR.ACRName #>.azurecr.io/cckeyvaultagent
+  tag: latest
+metadata:
+  aadpodidbinding: <#= environment.Deployment.AadPodIdentitySelector #>
+keyvaultagent:
+  sslCertName: <#= environment.SecretNames.FrontEndSslCertificate #>
+  CertKeyVaultUrl: <#= environment.Infrastructure.GlobalKeyVaultUri #>
+  RegionKeyVaultUrl: <#= environment.Infrastructure.keyVaultUri #>
+  Namespace: <#= config.GlobalServiceConfig.DeploymentNamespace #>
+  ARMCertName: <#= environment.SecretNames.ARMCertName #>

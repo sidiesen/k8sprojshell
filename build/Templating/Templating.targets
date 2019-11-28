@@ -1,0 +1,72 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+  </PropertyGroup> 
+  <Import Project="$(RepoRootDir)templates.targets" />
+  <Import Project="$(MSBuildThisFileDirectory)GenerateTemplates.targets" />
+  <Target Name="GenerateTemplates"
+          AfterTargets="Build"
+          Condition=" '$(IsMainProject)' == 'true' " >      
+    <ItemGroup>
+      <UnnormalizedTemplateFiles
+        Include="@(TemplateFiles)">
+        <BaseDir>$([System.IO.Path]::GetDirectoryName('%(TemplateFiles.Identity)'))</BaseDir>
+      </UnnormalizedTemplateFiles>
+      <FilteredTemplateFiles
+        Include="@(UnnormalizedTemplateFiles)"
+        Condition=" '%(Extension)' != '.tt' ">
+        <BaseDir>$([MsBuild]::NormalizeDirectory('%(UnnormalizedTemplateFiles.BaseDir)'))</BaseDir>
+      </FilteredTemplateFiles>
+    </ItemGroup>
+
+    <GenerateLocalizedTemplate 
+      RepoConfig="$(RepoConfigFile)" 
+      LocalRepoConfigFileDir="$(LocalRepoConfigFileDir)" 
+      LocalRepoConfigFileName="$(LocalRepoConfigFileName)"
+      CommonRepoConfigFileDir="$(CommonRepoConfigFileDir)" 
+      CommonRepoConfigFileName="$(CommonRepoConfigFileName)"
+      Templates="%(LocalizedTemplate.Identity)" 
+      OutFile="%(LocalizedTemplate.OutFileName)"
+      OutputPath="%(LocalizedTemplate.OutPath)" 
+      Condition=" '@(LocalizedTemplate)' != '' " />
+
+    <GenerateNonDevLocalizedTemplate 
+      RepoConfig="$(RepoConfigFile)" 
+      LocalRepoConfigFileDir="$(LocalRepoConfigFileDir)" 
+      LocalRepoConfigFileName="$(LocalRepoConfigFileName)"
+      CommonRepoConfigFileDir="$(CommonRepoConfigFileDir)" 
+      CommonRepoConfigFileName="$(CommonRepoConfigFileName)"
+      Templates="%(NonDevTemplate.Identity)" 
+      OutFile="%(NonDevTemplate.OutFileName)"
+      OutputPath="%(NonDevTemplate.OutPath)" 
+      Condition=" '@(NonDevTemplate)' != '' " />
+
+    <GenerateTemplate 
+      RepoConfig="$(RepoConfigFile)"
+      Templates="%(Template.Identity)" 
+      OutFile="%(Template.OutFileName)"
+      OutputPath="%(Template.OutPath)"
+      Condition=" '@(Template)' != '' " />
+
+    <GenerateDevTemplate 
+      RepoConfig="$(RepoConfigFile)" 
+      LocalRepoConfigFileDir="$(LocalRepoConfigFileDir)" 
+      LocalRepoConfigFileName="$(LocalRepoConfigFileName)"
+      CommonRepoConfigFileDir="$(CommonRepoConfigFileDir)"
+      CommonRepoConfigFileName="$(CommonRepoConfigFileName)"
+      Templates="%(DevTemplate.Identity)" 
+      OutFile="%(DevTemplate.OutFileName)"
+      OutputPath="%(DevTemplate.OutPath)"
+      Condition=" '@(DevTemplate)' != '' " />
+    
+    <Message Importance="High" Text="%(FilteredTemplateFiles.Identity) -> %(FilteredTemplateFiles.OutPath)$([MSBuild]::MakeRelative(%(FilteredTemplateFiles.BasePath), %(FilteredTemplateFiles.BaseDir)))%(FilteredTemplateFiles.Filename)%(FilteredTemplateFiles.Extension)" />
+
+    <Copy
+      Condition=" '@(FilteredTemplateFiles)' != '' "
+      SourceFiles="%(FilteredTemplateFiles.Identity)"
+      DestinationFolder="%(FilteredTemplateFiles.OutPath)$([MSBuild]::MakeRelative(%(FilteredTemplateFiles.BasePath), %(FilteredTemplateFiles.BaseDir)))" 
+      SkipUnchangedFiles="true" />
+  </Target>
+  <ItemGroup />
+</Project>

@@ -1,0 +1,44 @@
+{
+    "environment": {
+
+        "INSTRUCTIONS": {
+            "step1": "populate template with environment names: e.g.:",
+                "example1": "{Environment} = 'EastUS2'",
+                "example2": "{environment} = 'eastus2'",
+                "example3": "{env} = 'eus2'",
+            "step2": "rename the file so the file name reflects the new Environment name",
+            "step3": "re-read the file carefully to ensure all values look correct",
+            "step4": "read repoconfig.Common.json to double-check all values there apply to your new region",
+                "hint": "you can 'overshadow' values in repoconfig.Common.json by re-specifying them in this file",
+            "step5": "edit repoconfig.json to include the new region",
+            "step6": "remove this INSTRUCTIONS section",
+            "step7": "get JIT access and run '.\\deployment\\scripts\\bootstrapNewProdRegion.ps1 \"{Environment}\"' to bootstrap region",
+            "step8": "TODO: add release pipeline in VSTS for the new region"
+        },
+
+        "name": "{Environment}",
+        "shortname": "{env}",
+        "location": "{environment}",
+        "locationShortName": "{env}",
+        "environment": "[Prod|Dev|Canary|Dogfood]",
+        "AKS": {
+            "AKSCluster": "ccprodaks-{env}"
+        },
+        "Deployment": {
+            "DeploymentLocation": "{environment}"   
+        },
+        "Helm": {
+            "valuesYaml": "values-{env}.yaml" 
+        },
+        "Http": {
+            "httpPort": "80"
+        },
+        "Infrastructure": {
+            "keyVault": "ccdpprodkv{env}",
+            "keyVaultUri": "https://ccdpprodkv{env}.vault.azure.net/",
+            "kubeConfigSecretName": "AKSConfig{Environment}",
+            "resourceGroup": "ClusterConfig-prod-{env}",
+            "tenant": "AME"
+        }
+    }
+}

@@ -1,0 +1,25 @@
+{
+    "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/RolloutSpec.json",
+    "ContentVersion": "1.0.0.0",
+
+    "RolloutMetadata": {
+        "ServiceModelPath": "<#= environment #>\\<#= solution #>\\ServiceModel.json",
+        "Name": "<#= solution.rolloutSpecName #>",
+        "RolloutType": "Major",
+        "BuildSource": {
+            "Parameters": {
+                "ServiceGroupRoot": "ServiceGroupRoot",
+                "VersionFile": "buildver.txt"
+            }
+        }        
+    },
+
+    "OrchestratedSteps": [
+        {
+            "Name": "Rollout_Step_1",
+            "TargetType": "ServiceResource",
+            "TargetName": "DeployImage",
+            "Actions": [ "Shell/aksdeploy" ]
+        }
+    ]
+}

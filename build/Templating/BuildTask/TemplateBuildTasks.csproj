@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <OutputPath>$(MSBuildThisFileDirectory)bin</OutputPath>
+    <FileOutDir>$(OutputPath)</FileOutDir>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RootNamespace>Templating.BuildTask</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="netstandard" />
+    <PackageReference Include="Microsoft.Build.Framework" Version="16.*" GeneratePathProperty="true">
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="16.*" GeneratePathProperty="true">
+    </PackageReference>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.*" GeneratePathProperty="true">
+    </PackageReference>
+    <PackageReference Include="System.Text.Json" Version="4.6.0-preview9.19421.4" GeneratePathProperty="true">
+    </PackageReference>
+    <PackageReference Include="System.Memory" Version="4.5.3" GeneratePathProperty="true">
+    </PackageReference>
+  </ItemGroup>
+
+</Project>

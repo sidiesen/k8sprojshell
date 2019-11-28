@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.deployment.servicename }}-services
+  namespace: "{{ .Values.deployment.namespace }}"
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: {{ .Values.deployment.servicename }}
+      namespace: "{{ .Values.deployment.namespace }}"
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.deployment.servicename }}
+        namespace: "{{ .Values.deployment.namespace }}"
+        aadpodidbinding: {{ .Values.metadata.aadpodidbinding }}
+      annotations:
+        timestamp: "{{ .Release.Time.Seconds }}"
+    spec:
+      containers:
+      - name: {{ .Values.deployment.servicename }}
+        {{ if eq .Values.configmap.Environment "Dev" }} 
+        image: "{{ .Values.image.repository }}:latest"
+        {{ else }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        {{ end }}
+        ports:
+        - containerPort: {{ .Values.http.port }}
+        envFrom:
+        - configMapRef:
+            name: ccrp-configmap
+        readinessProbe:
+          httpGet:
+            path: /health/ready?api-version=1.0
+            port: {{ .Values.http.port }}
+            scheme: "{{ .Values.http.scheme }}" 
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            path: /health/live?api-version=1.0
+            port: {{ .Values.http.port }}
+            scheme: "{{ .Values.http.scheme }}" 
+          initialDelaySeconds: 60
+          periodSeconds: 60
+      imagePullSecrets:
+      - name: acrregistrykey
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0

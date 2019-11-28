@@ -1,0 +1,31 @@
+<Project>
+  <PropertyGroup>
+    <RepoRootDir>$([MsBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)\..\'))</RepoRootDir>
+    <TemplateDir>$(RepoRootDir)src\templates\</TemplateDir>
+    <RepoConfigFile>$(RepoRootDir)repoconfig.json</RepoConfigFile>
+    <LocalRepoConfigFileDir>$(RepoRootDir)config\</LocalRepoConfigFileDir>
+    <LocalRepoConfigFileName>repoconfig.{env}.json</LocalRepoConfigFileName>
+    <CommonRepoConfigFileDir>$(RepoRootDir)config\</CommonRepoConfigFileDir>
+    <CommonRepoConfigFileName>repoconfig.Common.json</CommonRepoConfigFileName>
+    <DockerFilePath>$(MSBuildThisFileDirectory)docker\$(SolutionName)\linux\</DockerFilePath>
+    <OutDir>$(RepoRootDir)out\$(Configuration)\</OutDir>
+    <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
+  </PropertyGroup>
+
+  <Import Project="$(RepoRootDir)build\Templating\Templating.targets" />
+
+  <Target Name="CopyDockerfile" BeforeTargets="PreBuildEvent" Condition=" '$(IsMainProject)' == 'true' ">
+    <Exec Command="jq -c -r .solutions.$(SolutionName).dockerfile repoconfig.json" 
+          ConsoleToMSBuild="true" 
+          IgnoreExitCode="true"
+          WorkingDirectory="$(RepoRootDir)"
+          EchoOff="true" >
+      <Output TaskParameter="ConsoleOutput" PropertyName="Dockerfile" />
+    </Exec>
+    <PropertyGroup>
+      <DockerFileFolderPrefix Condition="'$(Configuration)'=='Debug'">debug\</DockerFileFolderPrefix>
+      <DockerFileFullPath>$(DockerFilePath)$(DockerFileFolderPrefix)$(Dockerfile)</DockerFileFullPath>
+    </PropertyGroup>
+    <Copy SourceFiles="$(DockerFileFullPath)" DestinationFolder="$(RepoRootDir)out\$(Configuration)\$(SolutionName)\" Condition="Exists($(DockerFileFullPath))"/>
+  </Target>
+</Project>

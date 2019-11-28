@@ -1,0 +1,5 @@
+apiVersion: v1
+appVersion: "1.0"
+description: A Helm chart for installing the Front End Web Service for the Connected Cluster RP
+name: <#= solution.deploymentname #>
+version: 1.0

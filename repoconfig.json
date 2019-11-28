@@ -1,0 +1,46 @@
+{
+    "config": {
+        "deploymentname": "ccrp-deployment",
+        "solutions": ["ClusterConfigRP"],
+        "environments": ["EastUS2EUAP", "EastUS", "WestEurope"],
+        "tenants": ["AME", "MSFT"],
+        "defaultConfig": "Debug",
+        "defaultSolution": "ClusterConfigRP",
+        "GlobalServiceConfig": {
+            "GenevaMdsdVersion": "master_242",
+            "GenevaFluentdVersion": "master_118",
+            "GenevaMdmVersion": "master_16",
+            "GenevaSecpackVersion": "master_23",
+            "NginXDeploymentNamespace": "nginx",
+            "GenevaDeploymentNamespace": "clusterconfig-rp",
+            "DeploymentNamespace": "clusterconfig-rp"
+        }
+    },
+    "solutions": {
+        "ClusterConfigRP": {
+            "dockerfile": "ccrp.webservice.Dockerfile",
+            "deploymentname": "clusterconfigrp",
+            "rolloutSpecName": "UpdateCCRP",
+            "serviceGroupName": "CCRP.WebService",
+            "nginxDeploymentName": "haikuingress",
+            "ServiceName": "ccrpwebservice"
+        }
+    },
+    "tenants": {
+        "AME": {
+            "subscriptionId": "4207e8c7-aa0c-4447-8525-461ce58cdc25",
+            "tenantId": "33e01921-4d64-4f8c-a055-5bdaffd5e33d",
+            "Ev2DeploymentApplication": "5b306cba-9c71-49db-96c3-d17ca2379c4d"
+        },
+        "MSFT": {
+            "subscriptionId": "cd45f23b-b832-4fa4-a434-1bf7e6f14a5a",
+            "tenantId": "cd45f23b-b832-4fa4-a434-1bf7e6f14a5a",
+            "Ev2DeploymentApplication": "5744bc69-8a73-45f7-958d-4640d865f04d"
+        },
+        "Dev": {
+            "subscriptionId": "cd45f23b-b832-4fa4-a434-1bf7e6f14a5a",
+            "tenantId": "cd45f23b-b832-4fa4-a434-1bf7e6f14a5a",
+            "Ev2DeploymentApplication": "5744bc69-8a73-45f7-958d-4640d865f04d"
+        }
+    }
+}

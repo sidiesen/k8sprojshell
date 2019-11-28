@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <Target Name="BuildTasks"
+          BeforeTargets="Build"
+          Condition="('$(IsMainProject)' == 'true')">
+    <PropertyGroup>
+      <MSBUILDDISABLENODEREUSE>1</MSBUILDDISABLENODEREUSE>
+    </PropertyGroup>
+    <MSBuild Projects="$(MSBuildThisFileDirectory)BuildTask\TemplateBuildTasks.csproj"
+             Properties="Configuration=Release;OutputPath=$(MSBuildThisFileDirectory)BuildTask\bin" 
+             Targets="Restore;Rebuild" 
+             Condition="!(Exists('$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll'))" />
+  </Target>
+  <UsingTask 
+    TaskName="GenerateLocalizedTemplate"
+    AssemblyFile="$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll">
+  </UsingTask>
+  <UsingTask 
+    TaskName="GenerateTemplate" 
+    AssemblyFile="$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll">
+  </UsingTask>
+  <UsingTask 
+    TaskName="GenerateDevTemplate" 
+    AssemblyFile="$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll">
+  </UsingTask>
+  <UsingTask 
+    TaskName="GenerateNonDevTemplate" 
+    AssemblyFile="$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll">
+  </UsingTask>
+  <UsingTask
+    TaskName="GenerateNonDevLocalizedTemplate"
+    AssemblyFile="$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll">
+  </UsingTask>
+</Project>

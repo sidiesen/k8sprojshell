@@ -1,0 +1,8 @@
+Environment=Dev
+Role=<#= solution #>
+Location=<#= environment.location #>
+LogLevel=4
+EnableConsoleLogs=true
+EnableFileLogs=false
+EnableGenevaLogs=false
+DPEnpointDNS=https://sakulal3.northeurope.cloudapp.azure.com

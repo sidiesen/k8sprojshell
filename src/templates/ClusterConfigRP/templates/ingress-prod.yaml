@@ -1,0 +1,29 @@
+{{ if ne .Values.configmap.Environment "Dev" }}
+kind: Ingress
+apiVersion: extensions/v1beta1
+metadata:
+  name: ccrp-ingress
+  namespace: "{{ .Values.deployment.namespace }}"
+  annotations:
+    kubernetes.io/ingress.class: "nginx"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/auth-tls-verify-client: "on"
+    nginx.ingress.kubernetes.io/auth-tls-secret: "clusterconfig-rp/clusterconfig-arm"
+    nginx.ingress.kubernetes.io/auth-tls-verify-depth: "1"
+    nginx.ingress.kubernetes.io/auth-tls-pass-certificate-to-upstream: "true"
+spec:
+  tls:
+    - hosts:
+      - "*.rp.kubernetesconfiguration.azure.com"
+      secretName: {{ .Values.http.certname | lower }}
+  rules:
+    - http:
+        paths:
+          - path: /?(.*)
+            backend:
+              serviceName: {{ .Values.deployment.servicename }}
+              servicePort: {{ .Values.http.port }}
+      host: "*.rp.kubernetesconfiguration.azure.com"
+{{ end }}

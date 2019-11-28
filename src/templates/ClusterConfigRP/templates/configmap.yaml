@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ccrp-configmap
+  namespace: "{{ .Values.deployment.namespace }}"
+data:
+  Environment: "{{ .Values.configmap.Environment }}"
+  Role: "{{ .Values.configmap.Role }}"
+  Location: "{{ .Values.configmap.Location }}"
+  Build: "{{ .Values.image.tag }}"
+  MachineCollection: "{{ .Values.configmap.MachineCollection }}"
+  SubscriptionCollection: "{{ .Values.configmap.SubscriptionCollection }}"
+  LogLevel: "{{ .Values.configmap.LogLevel }}"
+  EnableConsoleLogs: "{{ .Values.configmap.EnableConsoleLogs }}"
+  EnableFileLogs: "{{ .Values.configmap.EnableFileLogs }}"
+  EnableGenevaLogs: "{{ .Values.configmap.EnableGenevaLogs }}"
+  StatsDHostName: "{{ .Values.configmap.StatsDHostName }}"
+  StatsDPort: "{{ .Values.configmap.StatsDPort }}"
+  MdmNamespace: "{{ .Values.configmap.MdmNamespace }}"
+  DPEnpointDNS: "{{ .Values.deployment.dp.ServiceName }}.{{ .Values.deployment.dp.Namespace }}"

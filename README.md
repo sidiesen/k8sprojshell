@@ -52,5 +52,3 @@
     * folder structure must stay intact
     * if Dockerfiles have different names than "Dockerfile", reflect the dockerfile name in repoconfig.json under solutions.<solution>.dockerfile
     * for now, only Linux images are supported, Windows image support might be added later
-8. choose a single project in your repo and mark as default solution by including the following entry in a PropertyGroup:
-    * `<IsMainProject>true</IsMainProject>`

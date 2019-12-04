@@ -10,9 +10,10 @@ param (
 )
 
 DynamicParam {
-    $RootDir = Join-Path $PSScriptRoot ".."
+    $RootDir = Join-Path $PSScriptRoot "..\.."
+    $BuildDir = Join-Path $PSScriptRoot ".."
 
-    Import-Module $RootDir/deployment/jsonValues.psm1
+    Import-Module $BuildDir/deployment/jsonValues.psm1
 
     $RoleParameterName = 'Role'
     $EnvParameterName = 'Env'
@@ -52,7 +53,7 @@ begin {
 process {
 
     $OutDir = Join-Path (Join-Path $RootDir "out") "$Config"
-    $ScriptDir = Join-Path $RootDir "deployment"
+    $ScriptDir = Join-Path $BuildDir "deployment"
     
     $imageName = "$Role"
     if($Config -eq "Debug")

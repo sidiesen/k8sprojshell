@@ -22,22 +22,20 @@
         "locationShortName": "{env}",
         "environment": "[Prod|Dev|Canary|Dogfood]",
         "AKS": {
-            "AKSCluster": "ccprodaks-{env}"
+            "AKSCluster": "prodaks-{env}",
+            "AKSSecrets": "prodAksSecrets"
         },
         "Deployment": {
             "DeploymentLocation": "{environment}"   
         },
         "Helm": {
-            "valuesYaml": "values-{env}.yaml" 
-        },
-        "Http": {
-            "httpPort": "80"
+            "valuesYaml": "values-{env}.yaml",
+            "chartPaths": "nginxIngress"
         },
         "Infrastructure": {
-            "keyVault": "ccdpprodkv{env}",
-            "keyVaultUri": "https://ccdpprodkv{env}.vault.azure.net/",
+            "keyVault": "prodkv{env}",
             "kubeConfigSecretName": "AKSConfig{Environment}",
-            "resourceGroup": "ClusterConfig-prod-{env}",
+            "resourceGroup": "rg-prod-{env}",
             "tenant": "AME"
         }
     }

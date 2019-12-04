@@ -1,6 +1,6 @@
 <#
     .SYNOPSIS
-        Builds the container image for HybridRP.
+        Builds the container image.
 
     .DESCRIPTION
         Use docker to build the container image and push it to the private repositories.
@@ -15,15 +15,12 @@
         The build path.
     .PARAMETER Dockerfile
         The docker file.
-    .PARAMETER RegistryCategory
-        The registry category.
 
     .EXAMPLE
         .\Build-Image.ps1 `
             -ImageName logging-agent-windows `
             -BuildPath .\images\logging-agent `
-            -Dockerfile .\images\logging-agent\windows\Dockerfile `
-            -RegistryCategory caas
+            -Dockerfile .\images\logging-agent\windows\Dockerfile 
 #>
 param (
     [Parameter(Mandatory=$false, Position=0)]
@@ -40,24 +37,10 @@ param (
 
     [Parameter(Mandatory=$true, Position=4)]
     [string]$Dockerfile
-
-    # [Parameter(Mandatory=$true, Position=5)]
-    # [ValidateSet("hybridrp")]
-    # [string]$RegistryCategory
 )
-
-# if ($BUILD_SOURCEBRANCHNAME -eq "master" -and $BUILD_SOURCEBRANCH -ne "refs/heads/master") {
-#     throw "'$BUILD_SOURCEBRANCH' cannot be used to build image, please use another source branch."
-# }
 
 $p = Start-Process docker -ArgumentList "build -t $ImageName -f $Dockerfile $BuildPath" -Wait -NoNewWindow -PassThru
 
 if ($p.ExitCode -ne 0) {
     throw "Failed to build the image '$ImageName'. Dockerfile: '$Dockerfile'"
 }
-
-# $scriptDir = Split-Path $script:MyInvocation.MyCommand.Path
-
-# Set-Location $scriptDir
-
-# .\Push-Image.ps1 -User $User -Pass $Pass -SourceImage $ImageName -RegistryCategory $RegistryCategory

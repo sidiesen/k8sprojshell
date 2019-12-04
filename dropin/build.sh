@@ -29,7 +29,7 @@ pushd $PWD > /dev/null
 errorlogfile="./builderr.log"
 
 current_dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" > /dev/null 2>&1 && pwd )"
-bash -c "$current_dir/build/build.sh $solutionfile $config $buildDockerImage" 2>$errorlogfile
+bash -c "$current_dir/build/scripts/build.sh $solutionfile $config $buildDockerImage" 2>$errorlogfile
 EX=$?
 
 cat $errorlogfile

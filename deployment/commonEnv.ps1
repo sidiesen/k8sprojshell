@@ -6,8 +6,8 @@ param(
     [string]$Config = "Debug"
 )
 
-$RootDir = Join-Path $PSScriptRoot "../.."
-Import-Module $RootDir/deployment/jsonValues.psm1
+$BuildDir = Join-Path $PSScriptRoot ".."
+Import-Module $BuildDir/deployment/jsonValues.psm1
 
 $ResourceGroup = Get-EnvironmentConfigValue ".environment.Infrastructure.resourceGroup" $Env
 $Location = Get-EnvironmentConfigValue ".environment.location" $Env
@@ -18,13 +18,12 @@ $ACR = Get-EnvironmentConfigValue ".environment.ACR.ACR" $Env
 $ACRName = Get-EnvironmentConfigValue ".environment.ACR.ACRName" $Env
 $KeyVault = Get-EnvironmentConfigValue ".environment.Infrastructure.keyVault" $Env
 $CloudVault = Get-EnvironmentConfigValue ".environment.Infrastructure.cloudVault" $Env
-$DeployAccount = Get-EnvironmentConfigValue ".environment.Deployment.deployAccount" $Env
+$DeployAccount = Get-EnvironmentConfigValue ".environment.Deployment.deployAccountSecretName" $Env
 $KubeConfigSecretName = Get-EnvironmentConfigValue ".environment.Infrastructure.kubeConfigSecretName" $Env
 $Tenant = Get-EnvironmentConfigValue ".environment.Infrastructure.tenant" $Env
 $DeployKeyVaultName = Get-EnvironmentConfigValue ".environment.Deployment.deployKeyVaultName" $Env
 $DeployKeySecretName = Get-EnvironmentConfigValue ".environment.Deployment.deployKeySecretName" $Env
 $ValuesYaml = Get-EnvironmentConfigValue ".environment.Helm.valuesYaml" $Env
-$GlobalKeyVaultSecurityGroup = Get-EnvironmentConfigValue ".environment.Infrastructure.globalKeyVaultSecurityGroup" $Env
 $GlobalResourceGroup = Get-EnvironmentConfigValue ".environment.Infrastructure.globalResourceGroup" $Env
 $AadServerAppIdSecretName = Get-EnvironmentConfigValue ".environment.SecretNames.AadServerAppId" $Env
 $AadServerAppKeySecretName = Get-EnvironmentConfigValue ".environment.SecretNames.AadServerAppKey" $Env
@@ -52,7 +51,6 @@ return @{
     DeployKeySecretName=$DeployKeySecretName;
     ValuesYaml=$ValuesYaml;
     LocationShortName=$LocationShortName;
-    GlobalKeyVaultSecurityGroup=$GlobalKeyVaultSecurityGroup;
     GlobalResourceGroup=$GlobalResourceGroup;
     AadServerAppIdSecretName=$AadServerAppIdSecretName;
     AadServerAppKeySecretName=$AadServerAppKeySecretName;

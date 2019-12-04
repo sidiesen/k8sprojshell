@@ -48,7 +48,7 @@ pushd %~dp0
 
 set errorlogfile="%~dp0\builderr.log"
 
-powershell "%~dp0\build\build.ps1" -Config %config% -SolutionFile %solutionfile% 2>%errorlogfile%
+powershell "%~dp0\build\scripts\build.ps1" -Config %config% -SolutionFile %solutionfile% 2>%errorlogfile%
 set EX=%ERRORLEVEL%
 
 type %errorlogfile%

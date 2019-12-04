@@ -7,9 +7,13 @@
       <MSBUILDDISABLENODEREUSE>1</MSBUILDDISABLENODEREUSE>
     </PropertyGroup>
     <MSBuild Projects="$(MSBuildThisFileDirectory)BuildTask\TemplateBuildTasks.csproj"
+             Properties="Configuration=Release;OutputPath=$(MSBuildThisFileDirectory)BuildTask\bin;DummyForReevaluation=true" 
+             Targets="Clean;Restore" 
+             RunEachTargetSeparately="true" />
+    <MSBuild Projects="$(MSBuildThisFileDirectory)BuildTask\TemplateBuildTasks.csproj"
              Properties="Configuration=Release;OutputPath=$(MSBuildThisFileDirectory)BuildTask\bin" 
-             Targets="Restore;Rebuild" 
-             Condition="!(Exists('$(MSBuildThisFileDirectory)BuildTask\bin\TemplateBuildTasks.dll'))" />
+             Targets="Build" 
+             RunEachTargetSeparately="true" />
   </Target>
   <UsingTask 
     TaskName="GenerateLocalizedTemplate"

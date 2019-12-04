@@ -3,8 +3,8 @@ param(
     [string]$Solution
 )
 
-$RootDir = Join-Path $PSScriptRoot "../.."
-Import-Module $RootDir/deployment/jsonValues.psm1
+$BuildDir = Join-Path $PSScriptRoot ".."
+Import-Module $BuildDir/deployment/jsonValues.psm1
 
 $NginxDeploymentName = Get-SolutionConfigValue ".solution.nginxDeploymentName" $Solution
 

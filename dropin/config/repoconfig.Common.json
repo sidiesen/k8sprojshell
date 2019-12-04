@@ -1,56 +1,7 @@
 {
     "environment": {
         "ACR": {
-            "ACR": "clusterconfigacr.azurecr.io/",
-            "ACRName": "ClusterConfigACR"
-        },
-        "Deployment": {
-            "CanaryFallbackLocation": "eastus",
-            "GenevaCertificate": "ClusterConfig-MDM",
-            "AzureSecPackMoniker": "clusterconfigdpsecurity",
-            "AzureSecPackEventVersion": "2",
-            "GcsConfigVersion": "1.0",
-            "GcsNamespace": "ClusterConfigDP",
-            "GcsAccount": "ClusterConfig",
-            "GcsEnvironment": "DiagnosticsProd",
-            "AadPodIdentitySelector": "select_ccpodidentity",
-            "AadPodIdentityAzureIdentity": "ccprodaadidentitycbn",
-            "AadPodIdentityClientId": "<client id guid>",
-            "AadPodIdentityResourceId": "<resource id (url path )>",
-            "DeploymentServicePrincipalName": "ardsbuilddeployauth",
-            "ImageSecretPullNamespaces": "clusterconfig-rp",
-            "DP": {
-                "ServiceName": "ccdpwebservice",
-                "Namespace": "clusterconfig-dp"
-            }
-        },
-        "Geneva": {
-            "StatsDHostName": "geneva-services",
-            "StatsDPort": "8125",
-            "MdmNamespace": "ccrpmetrics"
-        },
-        "Helm": {
-            "chartPaths": "keyvaultagent;ClusterConfigRP"
-        },
-        "Http": {
-            "httpPort": "80"
-        },
-        "Infrastructure": {
-            "globalKeyVaultSecurityGroup": "SP-ClusterConfig",
-            "globalResourceGroup": "ClusterConfigGlobalRG",
-            "GlobalKeyVaultUri": "https://clusterconfigglobalkv.vault.azure.net/",
-            "GlobalKeyVaultName": "clusterconfigglobalkv"
-        },
-        "SecretNames": {
-            "DeploymentKey": "ardsbuilddeployauth",
-            "DeploymentAccount": "ccdp-appid",
-            "AcrImportKey": "GenevaApplicationSecret",
-            "AcrImportAppId": "geneva-appid",
-            "AadServerAppId": "clusterconfigadserverapp-id",
-            "AadClientAppId": "clusterconfigadclientapp-id",
-            "AadServerAppKey": "clusterconfigadserverapp-key",
-            "FrontEndSslCertificate": "KubernetesConfigSSLCert",
-            "ARMCertName": "ClusterConfig-ARM"
+            "ACRName": "<ACR name>"
         }
     }
 }

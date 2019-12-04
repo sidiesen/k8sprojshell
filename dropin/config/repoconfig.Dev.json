@@ -2,34 +2,31 @@
     "environment": {
         "name": "Dev",
         "shortname": "dev",
-        "location": "centralus",
-        "locationShortName": "cus",
+        "location": "<azure_region>",
+        "locationShortName": "<azure_region_short_name>",
         "environment": "Dev",
         "ACR": {
-            "ACR": "ccrpdevacr.azurecr.io/",
-            "ACRName": "ccrpdevacr"
+            "ACRName": "devAksAcr"
         },
         "AKS": {
-            "AKSCluster": "ccrpdevaks2",
-            "AKSSecrets": "ccrpdevaks2Secrets"
+            "AKSCluster": "devAksCluster",
+            "AKSSecrets": "devAksSecrets"
         },
         "Helm": {
             "valuesYaml": "values-dev.yaml",
-            "chartPaths": "ConnectedClusterRP;nginxIngress"
+            "chartPaths": "nginxIngress"
         },
         "Infrastructure": {
-            "GlobalKeyVaultUri": "https://clusterconfigglobkv.vault.azure.net/",
-            "GlobalKeyVaultName": "clusterconfigglobkv",
-            "keyVault": "ccdp-dev-keyvault",
+            "GlobalKeyVaultName": "<global_kv_name>",
+            "keyVault": "<regional_kv_name>",
             "kubeConfigSecretName": "AKSConfig",
-            "resourceGroup": "sidiesen-k8s",
-            "tenant": "Dev",
-            "globalKeyVaultSecurityGroup": "SP-HybridRP"
+            "resourceGroup": "<resource_group_name>",
+            "tenant": "Dev"
         },
         "Deployment": {
-            "deployKeyVaultName": "ccrp-dev-keyvault",
-            "deployKeySecretName": "ccrpbuilddeployauth",
-            "deployAccount": "ccrp-appid"
+            "deployKeyVaultName": "<deployment_kv_name>",
+            "deployKeySecretName": "devbuilddeployauth",
+            "deployAccountSecretName": "<deploy_account_kv_secret_name>"
         }
     }
 }

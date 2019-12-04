@@ -3,8 +3,8 @@ param(
     [string]$Tenant
 )
     
-$RootDir = Join-Path $PSScriptRoot "../.."
-Import-Module $RootDir/deployment/jsonValues.psm1
+$BuildDir = Join-Path $PSScriptRoot ".."
+Import-Module $BuildDir/deployment/jsonValues.psm1
 
 $SubscriptionId = Get-TenantConfigValue ".tenant.subscriptionId" $Tenant
 $TenantId = Get-TenantConfigValue ".tenant.tenantId" $Tenant

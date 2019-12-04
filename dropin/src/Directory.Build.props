@@ -7,7 +7,7 @@
     <LocalRepoConfigFileName>repoconfig.{env}.json</LocalRepoConfigFileName>
     <CommonRepoConfigFileDir>$(RepoRootDir)config\</CommonRepoConfigFileDir>
     <CommonRepoConfigFileName>repoconfig.Common.json</CommonRepoConfigFileName>
-    <DockerFilePath>$(MSBuildThisFileDirectory)docker\$(SolutionName)\linux\</DockerFilePath>
+    <DockerFilePath>$(MSBuildThisFileDirectory)docker\linux\</DockerFilePath>
     <OutDir>$(RepoRootDir)out\$(Configuration)\</OutDir>
     <IsTransformWebConfigDisabled>true</IsTransformWebConfigDisabled>
   </PropertyGroup>

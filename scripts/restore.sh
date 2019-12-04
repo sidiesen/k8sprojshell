@@ -36,7 +36,7 @@ then
 fi
 
 # Restore solutionfile
-ROOT_DIR="$(dirname $0)/.."
+ROOT_DIR="$(dirname $0)/../.."
 
 for solutionfile in `find / -name $slnkey.sln`; do    
     echo "restore $solutionfile"

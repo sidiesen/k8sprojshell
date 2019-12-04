@@ -8,8 +8,8 @@ param (
 )
 
 DynamicParam {
-    $RootDir = Join-Path $PSScriptRoot "../.."
-    Import-Module $RootDir/deployment/jsonValues.psm1
+    $BuildDir = Join-Path $PSScriptRoot ".."
+    Import-Module $BuildDir/deployment/jsonValues.psm1
 
     $RoleParameterName = 'Role'
     $EnvParameterName = 'Env'
@@ -89,8 +89,6 @@ process {
         Invoke-Expression "helm upgrade $DeploymentName stable/nginx-ingress --install --namespace $NginXDeploymentNamespace --kubeconfig $ScriptPath/aksConnectionConfig --kube-context $AKSCluster --values ./values.yaml"
         #Invoke-Expression "helm install --kubeconfig $ScriptPath\aksConnectionConfig --kube-context $AKSCluster --values .\values.yaml --name haikuingress stable/nginx-ingress"
         Pop-Location
-
-        # kubectl create secret tls ccrp-nginx-cert --key C:\Work\HybridRP\certs\hcrpdfcluster.key --cert C:\Work\HybridRP\certs\hcrpdfcluster.crt
     }
 
     function Install-Image

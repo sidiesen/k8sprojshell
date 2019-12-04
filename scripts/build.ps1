@@ -6,10 +6,11 @@ param (
     [string]$Config
 )
 
-$RootDir = Join-Path $PSScriptRoot ".."
+$RootDir = Join-Path $PSScriptRoot "..\.."
+$BuildDir = Join-Path $PSScriptRoot ".."
 $OutDir = Join-Path (Join-Path $RootDir "out") "$Config"
 
-Import-Module $RootDir/deployment/jsonValues.psm1
+Import-Module $BuildDir/deployment/jsonValues.psm1
 
 if("$Config" -eq "")
 {
@@ -52,8 +53,6 @@ foreach($sln in $SolutionsToBuild)
     #     Write-Error "Failed to build \src\$slnFile."
     # }
 
-
-    $RootDir = Join-Path $PSScriptRoot ".."
     $outPath = Join-Path $OutDir (Get-Item $RootDir\src\$slnFile).BaseName
     dotnet publish "$RootDir\src\$slnFile" -c $Config -o $outPath
     if(! $?) { 
@@ -125,35 +124,35 @@ else
     Write-Warning "could not find CDPX generated version file semantic.fileversion.info"
 }
 
-# move deploy charts to output folder
-if (!$IsLinux)
-{
-    mkdir -p $OutDir\ev2deploy 
-    mkdir -p $OutDir\ev2deploy\bin
-    mkdir -p $OutDir\ev2deploy\charts
-    if (Test-Path $OutDir\ServiceGroupRoot)
-    {
-        rm -Path "$OutDir\ServiceGroupRoot" -Force -Recurse
-    }
-    XCOPY /Q /S /i /Y "$RootDir\deployment\ev2\ServiceGroupRoot" "$OutDir\ServiceGroupRoot"
-    XCOPY /Q /S /i /Y "$OutDir\ServiceGroupRoot\bin" "$OutDir\ev2deploy\bin"
-    XCOPY /Q /S /i /Y "$OutDir\charts" "$OutDir\ev2deploy\charts"
-}
-else
-{
-    mkdir -p $OutDir/ev2deploy 
-    mkdir -p $OutDir/ev2deploy/bin
-    mkdir -p $OutDir/ev2deploy/charts
-    cp -r $RootDir/deployment/ev2/ServiceGroupRoot/. $OutDir/ServiceGroupRoot/
-    cp -r $OutDir/ServiceGroupRoot/bin/. $OutDir/ev2deploy/bin
-    cp -f -r $OutDir/charts/. $OutDir/ev2deploy/charts
-}
+# # move deploy charts to output folder
+# if (!$IsLinux)
+# {
+#     mkdir -p $OutDir\ev2deploy 
+#     mkdir -p $OutDir\ev2deploy\bin
+#     mkdir -p $OutDir\ev2deploy\charts
+#     if (Test-Path $OutDir\ServiceGroupRoot)
+#     {
+#         rm -Path "$OutDir\ServiceGroupRoot" -Force -Recurse
+#     }
+#     XCOPY /Q /S /i /Y "$RootDir\deployment\ev2\ServiceGroupRoot" "$OutDir\ServiceGroupRoot"
+#     XCOPY /Q /S /i /Y "$OutDir\ServiceGroupRoot\bin" "$OutDir\ev2deploy\bin"
+#     XCOPY /Q /S /i /Y "$OutDir\charts" "$OutDir\ev2deploy\charts"
+# }
+# else
+# {
+#     mkdir -p $OutDir/ev2deploy 
+#     mkdir -p $OutDir/ev2deploy/bin
+#     mkdir -p $OutDir/ev2deploy/charts
+#     cp -r $RootDir/deployment/ev2/ServiceGroupRoot/. $OutDir/ServiceGroupRoot/
+#     cp -r $OutDir/ServiceGroupRoot/bin/. $OutDir/ev2deploy/bin
+#     cp -f -r $OutDir/charts/. $OutDir/ev2deploy/charts
+# }
 
-# package deploy.sh and helm charts into tar ball
-Write-Output "Building Ev2 deploy package"
-tar -cvf $OutDir/ServiceGroupRoot/bin/ev2deploy.tar -C $OutDir ev2deploy 2> $null
-Remove-Item $OutDir\ev2deploy -r -fo
-Write-Output "Finished building Ev2 deploy package"
+# # package deploy.sh and helm charts into tar ball
+# Write-Output "Building Ev2 deploy package"
+# tar -cvf $OutDir/ServiceGroupRoot/bin/ev2deploy.tar -C $OutDir ev2deploy 2> $null
+# Remove-Item $OutDir\ev2deploy -r -fo
+# Write-Output "Finished building Ev2 deploy package"
 
 $TagParam = ""
 if($SemanticBuildVersion)
@@ -166,7 +165,7 @@ if($BuildDockerImage)
     foreach($sln in $SolutionsToBuild)
     {
         Push-Location $RootDir
-        Invoke-Expression "$RootDir\build\publishImage.ps1 -Role $sln -Config $Config $TagParam -Actions build"
+        Invoke-Expression "$RootDir\build\scripts\publishImage.ps1 -Role $sln -Config $Config $TagParam -Actions build"
         Pop-Location
     }
 }

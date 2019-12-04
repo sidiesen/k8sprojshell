@@ -87,7 +87,7 @@ function PushImage {
 }
 
 $EnvConfig = Invoke-Expression "$ScriptPath/commonEnv.ps1 -Env $Env"
-$registry = $EnvConfig.ACR
+$registry = "$($EnvConfig.ACR).azurecr.io/"
 $user = Get-AzKeyVaultSecret -VaultName $EnvConfig.KeyVault -Name $EnvConfig.DeployAccount | %{$_.SecretValueText}
 $pass = Get-AzKeyVaultSecret -VaultName $EnvConfig.DeployKeyVaultName -Name $EnvConfig.DeployKeySecretName | %{$_.SecretValueText}
 

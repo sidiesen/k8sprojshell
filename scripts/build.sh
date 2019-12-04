@@ -36,7 +36,7 @@ then
 fi
 
 pushd $PWD > /dev/null
-ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." > /dev/null 2>&1 && pwd )"
+ROOT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/../.." > /dev/null 2>&1 && pwd )"
 popd > /dev/null
 
 if [ "$buildDockerImage" == "" ]; then

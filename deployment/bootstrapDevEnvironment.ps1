@@ -4,9 +4,10 @@
 $ScriptPath = Split-Path $MyInvocation.MyCommand.Path -Parent
 $Ev2Path = "$ScriptPath/../ev2/"
 $RootDir = Join-Path $PSScriptRoot "../.."
+$BuildDir = Join-Path $PSScriptRoot ".."
 # & $ScriptPath/../ev2/InstallEv2.ps1
 
-Import-Module $RootDir\deployment\jsonValues.psm1 -Force
+Import-Module $BuildDir\deployment\jsonValues.psm1 -Force
 
 # Ensure solution has been re-built before rolling out
 Push-Location $RootDir
@@ -192,11 +193,11 @@ Set-AzKeyVaultAccessPolicy -VaultName $EnvConfig.KeyVault -ObjectId $team2.Id -A
     $kv = $EnvConfig.KeyVault
     $user = Get-AzKeyVaultSecret -VaultName $kv -Name $EnvConfig.DeployAccount | %{$_.SecretValueText}
     $key  = Get-AzKeyVaultSecret -VaultName $kv -Name $EnvConfig.DeployKeySecretName | %{$_.SecretValueText}
-    $key | docker login  $EnvConfig.ACR -u $user --password-stdin
+    $key | docker login "$($EnvConfig.ACRName).azurecr.io/" -u $user --password-stdin
     kubectl create secret docker-registry acrregistrykey --docker-server=$EnvConfig.ACR --docker-username=$user --docker-password=$key
 
     foreach($project in $projectSet)
     {
-        Invoke-Expression "$RootDir\build\publishImage.ps1 -Role $project -Env Dev -Config Release -Actions push,deploy"
+        Invoke-Expression "$BuildDir\scripts\publishImage.ps1 -Role $project -Env Dev -Config Release -Actions push,deploy"
     }
 #}

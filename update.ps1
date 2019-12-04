@@ -13,6 +13,7 @@ Pop-Location
 
 Copy-Item -Path ".\build\dropin\build.cmd" -Destination "." -Force
 Copy-Item -Path ".\build\dropin\build.sh" -Destination "." -Force
+Copy-Item -Path ".\build\dropin\.gitignore" -Destination "." -Force
 
 if($result)
 {

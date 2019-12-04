@@ -1,7 +1,0 @@
-cd <repo root>
-
-# build source code and publish to \out folder
-.\build.cmd ["ClusterConfigRP"] [Release]
-
-# build image, push to ACR and deploy to AKS
-.\build\publishImage.ps1 -env dogfood -role ClusterConfigRP -Config Release -Actions build,push,deploy

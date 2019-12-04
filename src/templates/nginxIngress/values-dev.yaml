@@ -1,7 +1,0 @@
-controller:
-  image:
-    tag: "0.22.0"
-  service:
-    enableHttp: false
-  config:
-    keep-alive: "0"

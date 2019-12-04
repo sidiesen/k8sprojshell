@@ -46,17 +46,21 @@ else {
 
 foreach($sln in $SolutionsToBuild)
 {
-    $slnFile = Get-ChildItem -Path $RootDir\src\$proj -Name "*$sln.sln" -Recurse
-    # dotnet restore $slnFile
-    # dotnet build "$RootDir\src\$slnFile" -c $Config
-    # if(! $?) { 
-    #     Write-Error "Failed to build \src\$slnFile."
-    # }
-
-    $outPath = Join-Path $OutDir (Get-Item $RootDir\src\$slnFile).BaseName
-    dotnet publish "$RootDir\src\$slnFile" -c $Config -o $outPath
-    if(! $?) { 
-        Write-Error "Failed to publish src\$slnFile."
+    $slnLang = (Get-RepositoryConfigValue ".solutions.$sln.language")
+    if($slnLang -eq 'csharp')
+    {
+        $languageBuildScript = "$PSScriptRoot\languages\csharp\build.ps1"
+        Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
+    }
+    elseif($slnLang -eq 'go')
+    {
+        $languageBuildScript = "$PSScriptRoot\languages\go\build.ps1"
+        Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
+    }
+    else
+    {
+        Write-Error "'$slnLang' is an unknown build language! (Solution '$sln')"
+        Exit 1
     }
 }
 

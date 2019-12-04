@@ -8,6 +8,7 @@
     "solutions": {
         "<solution_name>": {
             "dockerfile": "Dockerfile",
+            "language": "csharp",
             "deploymentname": "<deployment_name>",
             "rolloutSpecName": "<rollout_spec_name>",
             "serviceGroupName": "<service_group_name>",

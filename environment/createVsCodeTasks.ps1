@@ -95,7 +95,7 @@ function Create-DockerRunTask
                 `"$($HttpsPortNo):443/tcp`",
                 `"-p`",
                 `"$($HttpPortNo):80/tcp`",
-                `"$imageName:latest`"
+                `"$($imageName):latest`"
             ],
             `"group`": `"none`",
             `"presentation`": {
@@ -114,8 +114,6 @@ function Create-DockerRunTask
                 `"run`",
                 `"--rm`",
                 `"-d`",
-                `"--env-file`",
-                `"./.vscode/localenv/ccdp.env`",
                 `"-e`",
                 `"\`"WaitAttach=1\`"`",
                 `"--name`",
@@ -124,7 +122,7 @@ function Create-DockerRunTask
                 `"$($HttpsPortNo):443/tcp`",
                 `"-p`",
                 `"$($HttpPortNo):80/tcp`",
-                `"clusterconfigdp_debug:latest`"
+                `"$($imageName):latest`"
             ],
             `"group`": `"none`",
             `"presentation`": {
@@ -374,10 +372,10 @@ function Create-VSCodeTasks
 
     $tasks += (Create-DevDeployAllTask)
 
-    return $header + ($tasks | Join-String Name -Separator ",") + $footer
+    return $header + ($tasks -join ",") + $footer
 }
 
 # pretty print the json object
-$tasksJson = Create-VSCodeTasks | ConvertFrom-Json | ConvertTo-Json
+$tasksJson = Create-VSCodeTasks | ConvertFrom-Json | ConvertTo-Json -depth 100
 
 Write-Output $tasksJson

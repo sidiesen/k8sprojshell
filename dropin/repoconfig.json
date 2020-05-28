@@ -10,6 +10,7 @@
             "build": "true",
             "dockerBuild": "true",
             "dockerfile": "Dockerfile",
+            "dockerfilePath": "docker/<solution_name>/linux",
             "language": "csharp",
             "deploymentname": "<deployment_name>",
             "rolloutSpecName": "<rollout_spec_name>",

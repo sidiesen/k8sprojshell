@@ -9,7 +9,7 @@ param (
 $RootDir = Join-Path $PSScriptRoot ".."
 $OutDir = Join-Path (Join-Path $RootDir "out") "$Config"
 
-Import-Module $RootDir/deployment/scripts/jsonValues.psm1
+Import-Module $RootDir/deployment/jsonValues.psm1
 
 if("$Config" -eq "")
 {
@@ -65,28 +65,6 @@ foreach($sln in $SolutionsToBuild)
         }
     }
 }
-
-# todo: sathish do we need to enable ?
-# testsolution=`find / -name HybridCompute.sln`
-# echo "test $testsolution"
-# dotnet test $testsolution
-# if [ $? -ne 0 ]; then
-#     echo "Unit tests failed for $testsolution."
-#     exit 1
-# fi
-
-# if (!$IsLinux)
-# {
-#     XCOPY /Q /S /Y "$RootDir\deployment\charts" "$OutDir\charts\"
-#     XCOPY /Q /S /Y "$RootDir\deployment\ev2\ServiceGroupRoot" "$OutDir\ServiceGroupRoot\"
-# }
-# else
-# {
-#     cp -f -r $RootDir/deployment/charts $OutDir/charts/
-#     cp -f -r $RootDir/deployment/ev2/ServiceGroupRoot $OutDir/ServiceGroupRoot
-# }
-
-
 
 # replace charts and default values with the Build version
 if (Test-Path $RootDir\.version\numeric.fileversion.info.noleadingzeros)

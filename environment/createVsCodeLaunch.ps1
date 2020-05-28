@@ -15,7 +15,7 @@ function Create-LaunchConfig
     )
 
     return "{
-        `"name`": `"$SolutionName: Attach Debugger local`",
+        `"name`": `"${SolutionName}: Attach Debugger local`",
         `"type`": `"coreclr`",
         `"request`": `"attach`",
         `"preLaunchTask`": `"`",
@@ -55,10 +55,10 @@ function Create-VSCodeLaunchConfigs
         $configs += (Create-LaunchConfig -SolutionName $sln -ContainerName $containerName)
     }
 
-    return $header + ($configs | Join-String Name -Separator ",") + $footer
+    return $header + ($configs -join ",") + $footer
 }
 
 # pretty print the json object
-$launchConfigsJson = Create-VSCodeLaunchConfigs | ConvertFrom-Json | ConvertTo-Json
+$launchConfigsJson = Create-VSCodeLaunchConfigs | ConvertFrom-Json | ConvertTo-Json -depth 100
 
 Write-Output $launchConfigsJson

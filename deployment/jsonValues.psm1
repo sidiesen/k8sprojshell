@@ -7,7 +7,7 @@ param(
 [Parameter(Mandatory=$true, Position=1)]
 [string]$JsonFile
 )
-    $RootDir = Join-Path $PSScriptRoot ".."
+    $RootDir = Join-Path $PSScriptRoot "../.."
     $fileContents = Get-Content (Join-Path $RootDir $JsonFile) | ConvertFrom-Json
     $accessors = $QueryPath.Split('.')
     $value = $fileContents

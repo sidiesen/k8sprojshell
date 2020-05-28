@@ -11,9 +11,8 @@ param (
 
 DynamicParam {
     $RootDir = Join-Path $PSScriptRoot "..\.."
-    $BuildDir = Join-Path $PSScriptRoot ".."
 
-    Import-Module $BuildDir/deployment/jsonValues.psm1
+    Import-Module $RootDir/build/deployment/jsonValues.psm1
 
     $RoleParameterName = 'Role'
     $EnvParameterName = 'Env'
@@ -25,7 +24,8 @@ DynamicParam {
     $ParameterAttribute.Position = 1
     $RoleAttributeCollection.Add($ParameterAttribute)
     $solutionSet = (Get-RepositoryConfigValue ".config.solutions").trim("[]").split(",").trim("""")
-    $RoleValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute([String[]]@() + $solutionSet)
+    $RoleValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute([String[]]@("all") + $solutionSet)
+
     $RoleAttributeCollection.Add($RoleValidateSetAttribute)
 
     $EnvAttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
@@ -33,8 +33,8 @@ DynamicParam {
     $ParameterAttribute.Mandatory = $false
     $ParameterAttribute.Position = 0
     $EnvAttributeCollection.Add($ParameterAttribute)
-    $solutionSet = (Get-RepositoryConfigValue ".config.environments").trim("[]").split(",").trim("""")
-    $EnvValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute([String[]]@("Dev") + $solutionSet)
+    $envSet = (Get-RepositoryConfigValue ".config.environments").trim("[]").split(",").trim("""")
+    $EnvValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute([String[]]@("Dev") + $envSet)
     $EnvAttributeCollection.Add($EnvValidateSetAttribute)
 
     # Create and return the dynamic parameter
@@ -51,40 +51,73 @@ begin {
 }
 
 process {
-
     $OutDir = Join-Path (Join-Path $RootDir "out") "$Config"
-    $ScriptDir = Join-Path $BuildDir "deployment"
+    $SrcDir = Join-Path $RootDir "src"
+    $ScriptDir = Join-Path $RootDir "build\deployment"
     
-    $imageName = "$Role"
-    if($Config -eq "Debug")
-    {
-        $imageName += "_debug"
-    }
-    if(-not [string]::IsNullOrEmpty($Tag))
-    {
-        $imageName += ":$Tag"
-    }
-    $imageName = $imageName.ToLower()
+    $allRoles = [String[]]@()
 
-    $success = $true
-
-    if($Actions -contains "build")
+    if("$Role" -eq "all")
     {
-        Write-Verbose "Build the image for $imageName" -Verbose
-        $dockerfile = Get-SolutionConfigValue ".solution.dockerfile" $Role
-        Invoke-Expression "$ScriptDir\build-image.ps1 -ImageName $imageName -BuildPath $OutDir/$Role -Dockerfile $OutDir/$Role/$dockerfile"
+        $allRoles = $allRoles + $solutionSet
+    }
+    else 
+    {
+        $allRoles = $allRoles + "$Role"
     }
 
-    if($Actions -contains "push")
+    foreach($currentRole in $allRoles)
     {
-        Write-Verbose "Push the image of $Role" -Verbose
-        Invoke-Expression "$ScriptDir\push-image.ps1 -Env $Env -sourceImage $imageName"
-    }
+        $role = $currentRole
+        $dockerPathAppend = ""
+        if($Config -eq "Debug")
+        {
+            $currentRole += "_debug"
+            $dockerPathAppend = "/debug"
+        }
+        if(-not [string]::IsNullOrEmpty($Tag))
+        {
+            $currentRole += ":$Tag"
+        }
+        $currentRole = $currentRole.ToLower()
 
-    if($Actions -contains "deploy")
-    {
-        Write-Verbose "Deploy the $Role" -Verbose
-        $deploymentname = Get-RepositoryConfigValue ".config.deploymentname"
-        Invoke-Expression "$ScriptDir\deploy-image.ps1 -Env $Env -Role $Role -DeploymentName $deploymentname -Config $Config"
+        if($Actions -contains "build")
+        {
+            Write-Verbose "Build the image for $currentRole" -Verbose
+            $dockerfile = Get-SolutionConfigValue ".solution.dockerfile" $role
+            if((Get-SolutionConfigValue ".solution.dockerBuild" $role) -eq "true") 
+            {
+                $dockerSrcPath = Get-SolutionConfigValue ".solution.dockerfilePath" $role
+                $newDockerSrcPath = "$dockerSrcPath$dockerPathAppend"
+                if(Test-Path "$SrcDir/$newDockerSrcPath")
+                {
+                    $dockerSrcPath = $newDockerSrcPath
+                }
+
+                $buildPath = ""
+                if((Get-SolutionConfigValue ".solution.build" $role) -eq "true")
+                {
+                    $buildPath = "$OutDir/$role"
+                }
+                else 
+                {
+                    $dockerContentPath = Get-SolutionConfigValue ".solution.dockerContentPath" $role
+                    $buildPath = "$SrcDir/$dockerContentPath"
+                }
+                Invoke-Expression "$ScriptDir\build-image.ps1 -ImageName $currentRole -BuildPath $buildPath -Dockerfile $SrcDir/$dockerSrcPath/$dockerfile"
+            }
+        }
+
+        if(($Actions -contains "push") -and ((Get-SolutionConfigValue ".solution.dockerBuild" $role) -eq "true"))
+        {
+            Write-Verbose "Push the image of $currentRole" -Verbose
+            Invoke-Expression "$ScriptDir\push-image.ps1 -Env $Env -sourceImage $currentRole"
+        }
+
+        if($Actions -contains "deploy")
+        {
+            Write-Verbose "Deploy $currentRole" -Verbose
+            Invoke-Expression "$ScriptDir\deploy-image.ps1 -Env $Env -Role $currentRole -Config $Config"
+        }
     }
 }

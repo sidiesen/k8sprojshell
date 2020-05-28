@@ -58,6 +58,10 @@ namespace Templating.BuildTask
                     foreach(var sln in solutions.EnumerateArray())
                     {
                         var solutionName = sln.s();
+                        if("false".Equals(repoconf.p("solutions").p(solutionName).p("build").s()))
+                        {
+                            continue;
+                        }
 
                         // create an instantiation of the template for each environment
                         var environments = new List<string>();

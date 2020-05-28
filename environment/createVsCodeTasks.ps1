@@ -82,7 +82,7 @@ function Create-DockerRunTask
     $imageName = "$($SolutionName)_debug".ToLower()
 
     return "{
-            `"label`": `"$($SolutionName): Run Docker container local (Debug, port $HttpPortNo)`",
+            `"label`": `"$($SolutionName): Run Docker container local (Debug, port $HttpPortNo/$HttpsPortNo)`",
             `"command`": `"docker`",
             `"type`": `"shell`",
             `"args`": [
@@ -96,6 +96,35 @@ function Create-DockerRunTask
                 `"-p`",
                 `"$($HttpPortNo):80/tcp`",
                 `"$imageName:latest`"
+            ],
+            `"group`": `"none`",
+            `"presentation`": {
+                `"reveal`": `"always`"
+            },
+            `"dependsOn`":[
+                `"$($SolutionName): Build Docker image Debug`"
+            ],
+            `"problemMatcher`": `"`$msCompile`"
+        },
+        {
+            `"label`": `"$($SolutionName): Run Docker container local WaitAttach (Debug, port $HttpPortNo/$HttpsPortNo)`",
+            `"command`": `"docker`",
+            `"type`": `"shell`",
+            `"args`": [
+                `"run`",
+                `"--rm`",
+                `"-d`",
+                `"--env-file`",
+                `"./.vscode/localenv/ccdp.env`",
+                `"-e`",
+                `"\`"WaitAttach=1\`"`",
+                `"--name`",
+                `"$ContainerName`",
+                `"-p`",
+                `"$($HttpsPortNo):443/tcp`",
+                `"-p`",
+                `"$($HttpPortNo):80/tcp`",
+                `"clusterconfigdp_debug:latest`"
             ],
             `"group`": `"none`",
             `"presentation`": {
@@ -139,14 +168,28 @@ function Create-DockerRerunTask
     param(
         [string]$SolutionName,
         [string]$ContainerName,
-        [int]$HttpPortNo
+        [int]$HttpPortNo,
+        [int]$HttpsPortNo
     )
     return "{
             `"label`": `"$($SolutionName): Rerun (Debug)`",
             `"group`": `"none`",
             `"dependsOn`":[
                 `"$($SolutionName): Stop Docker container local (Debug)`",
-                `"$($SolutionName): Run Docker container local (Debug, port $HttpPortNo)`"
+                `"$($SolutionName): Run Docker container local (Debug, port $HttpPortNo/$HttpsPortNo)`"
+            ],
+            `"dependsOrder`": `"sequence`",
+            `"presentation`": {
+                `"reveal`": `"always`"
+            },
+            `"problemMatcher`": `"`$msCompile`"
+        },
+        {
+            `"label`": `"CCDP: Rerun WaitAttach (Debug)`",
+            `"group`": `"none`",
+            `"dependsOn`":[
+                `"$($SolutionName): Stop Docker container local (Debug)`",
+                `"$($SolutionName): Run Docker container local WaitAttach (Debug, port $HttpPortNo/$HttpsPortNo)`"
             ],
             `"dependsOrder`": `"sequence`",
             `"presentation`": {
@@ -159,7 +202,7 @@ function Create-DockerRerunTask
 function Create-BootstrapDevTask
 {
     return "{
-            `"label`": `"K8s: Bootstrap Dev Region`",
+            `"label`": `"K8s: Bootstrap Dev Region Cluster`",
             `"command`": `"pwsh`",
             `"windows`": {
                 `"command`": `"powershell`",
@@ -239,14 +282,25 @@ function Create-DevDeployAllTask
             `"label`": `"Deploy All to Dev`",
             `"command`": `"pwsh`",
             `"windows`": {
-                `"command`": `"powershell`"
+                `"command`": `"powershell`",
+                `"args`": [
+                    `"-ExecutionPolicy`",
+                    `"Unrestricted`",
+                    `"-NoProfile`",
+                    `"-Command`",
+                    `"\`"./build/publishImage.ps1`" ,
+                    `"-Role`",
+                    `"all`",
+                    `"-Env`",
+                    `"Dev`",
+                    `"-Config`",
+                    `"Release`",
+                    `"-Actions`",
+                    `"push,deploy\`"`"
+                ]
             },
             `"type`": `"shell`",
             `"args`": [
-                `"-ExecutionPolicy`",
-                `"Unrestricted`",
-                `"-NoProfile`",
-                `"-Command`",
                 `"\`"./build/publishImage.ps1`" ,
                 `"-Role`",
                 `"all`",
@@ -303,7 +357,7 @@ function Create-VSCodeTasks
         $containerName = "$(Get-RepositoryConfigValue ".solutions.$sln.ServiceName")_local".ToLower()
         $tasks += (Create-DockerRunTask -SolutionName $sln -ContainerName $containerName -HttpPortNo $httpPortNo -HttpsPortNo $httpsPortNo)
         $tasks += (Create-DockerStopTask -SolutionName $sln -ContainerName $containerName)
-        $tasks += (Create-DockerRerunTask -SolutionName $sln -ContainerName $containerName -HttpPortNo $httpPortNo)
+        $tasks += (Create-DockerRerunTask -SolutionName $sln -ContainerName $containerName -HttpPortNo $httpPortNo -HttpsPortNo $httpsPortNo)
         $httpPortNo++
         $httpsPortNo++
     }

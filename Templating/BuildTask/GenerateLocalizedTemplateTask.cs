@@ -34,7 +34,7 @@ namespace Templating.BuildTask
                 var repoconf = JsonDocument.Parse(repoConfigContent).RootElement;
 
                 var environmentsJson = JsonHelpers.p(repoconf, "config").p("environments");
-                var solutions = repoconf.p("config").p("solutions");
+                var solutionsJson = repoconf.p("config").p("solutions");
                             
                 string commonRepoConfigContent;
                 using (StreamReader sr = new StreamReader(commonRepoConfigFullName)) 
@@ -54,10 +54,27 @@ namespace Templating.BuildTask
                 {
                     var templateName = Path.GetFileNameWithoutExtension(template.ItemSpec);
 
-                    // create templates for each solution
-                    foreach(var sln in solutions.EnumerateArray())
+                    string[] validSolutions;
+                    if(String.IsNullOrEmpty(this.solutions))
                     {
-                        var solutionName = sln.s();
+                        List<string> newSolutions = new List<string>();
+                        foreach(var sln in solutionsJson.EnumerateArray())
+                        {
+                            newSolutions.Add(sln.s());
+                        }
+                        validSolutions = newSolutions.ToArray();
+                    } 
+                    else {
+                        validSolutions = this.solutions.Split(';');
+                    }
+
+                    // create templates for each solution
+                    foreach(var solutionName in validSolutions)
+                    {
+                        if("false".Equals(repoconf.p("solutions").p(solutionName).p("build").s()))
+                        {
+                            continue;
+                        }
 
                         // create an instantiation of the template for each environment
                         var environments = new List<string>();
@@ -264,6 +281,13 @@ namespace Templating.BuildTask
             get { return this.outFile; }  
             set { this.outFile = value; }  
         } 
+
+        private string solutions;
+        public string Solutions
+        {
+            get { return this.solutions; }
+            set { this.solutions = value; }
+        }
 
         private string outputPath;  
         [Required]

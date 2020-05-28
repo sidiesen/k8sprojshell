@@ -6,15 +6,22 @@ param (
     [string]$Config
 )
 
-$RootDir = Join-Path $PSScriptRoot "..\.."
-$BuildDir = Join-Path $PSScriptRoot ".."
+$RootDir = Join-Path $PSScriptRoot ".."
 $OutDir = Join-Path (Join-Path $RootDir "out") "$Config"
 
-Import-Module $BuildDir/deployment/jsonValues.psm1
+Import-Module $RootDir/deployment/scripts/jsonValues.psm1
 
 if("$Config" -eq "")
 {
     $Config = Get-RepositoryConfigValue ".config.defaultConfig"
+}
+
+# This file is provided by CDPX and we can use it to determine whether we're building locally or not
+$IsOfficialBuild = $false
+if (Test-Path $RootDir\.version\numeric.fileversion.info.noleadingzeros)
+{
+    $IsOfficialBuild = $true
+    $Env:SKIP_LOCAL_SECRET_FETCH = "True"
 }
 
 $BuildDockerImageEnv=$Env:buildDockerImage;
@@ -31,7 +38,7 @@ elseif("$BuildDockerImageEnv" -ne "True")
 
 $SolutionsToBuild = @()
 
-if("$SolutionFile" -eq "")
+if(("$SolutionFile" -eq "") -or ("$SolutionFile" -eq "all"))
 {
     $solutionSet = (Get-RepositoryConfigValue ".config.solutions").trim("[]").split(",").trim("""")
     # build all projects and remove well known support projects from list
@@ -46,28 +53,20 @@ else {
 
 foreach($sln in $SolutionsToBuild)
 {
-
     if((Get-SolutionConfigValue ".solution.build" $sln) -eq "true") 
     {
-        $slnLang = (Get-RepositoryConfigValue ".solutions.$sln.language")
-        if($slnLang -eq 'csharp')
-        {
-            $languageBuildScript = "$PSScriptRoot\languages\csharp\build.ps1"
-            Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
-        }
-        elseif($slnLang -eq 'go')
-        {
-            $languageBuildScript = "$PSScriptRoot\languages\go\build.ps1"
-            Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
-        }
-        else
-        {
-            Write-Error "'$slnLang' is an unknown build language! (Solution '$sln')"
-            Exit 1
+        $slnFile = Get-ChildItem -Path $RootDir\src\$proj -Name "*$sln.sln" -Recurse
+
+        $RootDir = Join-Path $PSScriptRoot ".."
+        $outPath = Join-Path $OutDir (Get-Item $RootDir\src\$slnFile).BaseName
+        dotnet publish "$RootDir\src\$slnFile" -c $Config -o $outPath
+        if(! $?) { 
+            Write-Error "Failed to publish src\$slnFile."
         }
     }
 }
 
+# todo: sathish do we need to enable ?
 # testsolution=`find / -name HybridCompute.sln`
 # echo "test $testsolution"
 # dotnet test $testsolution
@@ -131,35 +130,35 @@ else
     Write-Warning "could not find CDPX generated version file semantic.fileversion.info"
 }
 
-# # move deploy charts to output folder
-# if (!$IsLinux)
-# {
-#     mkdir -p $OutDir\ev2deploy 
-#     mkdir -p $OutDir\ev2deploy\bin
-#     mkdir -p $OutDir\ev2deploy\charts
-#     if (Test-Path $OutDir\ServiceGroupRoot)
-#     {
-#         rm -Path "$OutDir\ServiceGroupRoot" -Force -Recurse
-#     }
-#     XCOPY /Q /S /i /Y "$RootDir\deployment\ev2\ServiceGroupRoot" "$OutDir\ServiceGroupRoot"
-#     XCOPY /Q /S /i /Y "$OutDir\ServiceGroupRoot\bin" "$OutDir\ev2deploy\bin"
-#     XCOPY /Q /S /i /Y "$OutDir\charts" "$OutDir\ev2deploy\charts"
-# }
-# else
-# {
-#     mkdir -p $OutDir/ev2deploy 
-#     mkdir -p $OutDir/ev2deploy/bin
-#     mkdir -p $OutDir/ev2deploy/charts
-#     cp -r $RootDir/deployment/ev2/ServiceGroupRoot/. $OutDir/ServiceGroupRoot/
-#     cp -r $OutDir/ServiceGroupRoot/bin/. $OutDir/ev2deploy/bin
-#     cp -f -r $OutDir/charts/. $OutDir/ev2deploy/charts
-# }
+# move deploy charts to output folder
+if (!$IsLinux)
+{
+    mkdir -p $OutDir\ev2deploy 
+    mkdir -p $OutDir\ev2deploy\bin
+    mkdir -p $OutDir\ev2deploy\charts
+    if (Test-Path $OutDir\ServiceGroupRoot)
+    {
+        rm -Path "$OutDir\ServiceGroupRoot" -Force -Recurse
+    }
+    XCOPY /Q /S /i /Y "$RootDir\deployment\ev2\ServiceGroupRoot" "$OutDir\ServiceGroupRoot"
+    XCOPY /Q /S /i /Y "$OutDir\ServiceGroupRoot\bin" "$OutDir\ev2deploy\bin"
+    XCOPY /Q /S /i /Y "$OutDir\charts" "$OutDir\ev2deploy\charts"
+}
+else
+{
+    mkdir -p $OutDir/ev2deploy 
+    mkdir -p $OutDir/ev2deploy/bin
+    mkdir -p $OutDir/ev2deploy/charts
+    cp -r $RootDir/deployment/ev2/ServiceGroupRoot/. $OutDir/ServiceGroupRoot/
+    cp -r $OutDir/ServiceGroupRoot/bin/. $OutDir/ev2deploy/bin
+    cp -f -r $OutDir/charts/. $OutDir/ev2deploy/charts
+}
 
-# # package deploy.sh and helm charts into tar ball
-# Write-Output "Building Ev2 deploy package"
-# tar -cvf $OutDir/ServiceGroupRoot/bin/ev2deploy.tar -C $OutDir ev2deploy 2> $null
-# Remove-Item $OutDir\ev2deploy -r -fo
-# Write-Output "Finished building Ev2 deploy package"
+# package deploy.sh and helm charts into tar ball
+Write-Output "Building Ev2 deploy package"
+tar -cvf $OutDir/ServiceGroupRoot/bin/ev2deploy.tar -C $OutDir ev2deploy 1> $null 2> $null
+Remove-Item $OutDir\ev2deploy -r -fo
+Write-Output "Finished building Ev2 deploy package"
 
 $TagParam = ""
 if($SemanticBuildVersion)
@@ -172,7 +171,7 @@ if($BuildDockerImage)
     foreach($sln in $SolutionsToBuild)
     {
         Push-Location $RootDir
-        Invoke-Expression "$RootDir\build\scripts\publishImage.ps1 -Role $sln -Config $Config $TagParam -Actions build"
+        Invoke-Expression "$RootDir\build\publishImage.ps1 -Role $sln -Config $Config $TagParam -Actions build"
         Pop-Location
     }
 }

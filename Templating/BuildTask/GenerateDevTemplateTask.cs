@@ -2,7 +2,9 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -78,6 +80,10 @@ namespace Templating.BuildTask
                     foreach(var sln in solutions.EnumerateArray())
                     {
                         var solutionName = sln.s();
+                        if("false".Equals(repoconf.p("solutions").p(solutionName).p("build").s()))
+                        {
+                            continue;
+                        }
 
                         var outFileName = Path.Combine(this.outputPath, this.outFile);
                         outFileName = outFileName.Replace("{name}", templateName);
@@ -125,15 +131,129 @@ namespace Templating.BuildTask
 
             System.Text.RegularExpressions.MatchEvaluator me = delegate(System.Text.RegularExpressions.Match match) {
                 var valuePath = match.Groups[1].ToString();
-                return GetRepoConfValue(repoconf, localrepoconf, commonrepoconf, valuePath, solution);
+                if(valuePath.StartsWith("Secret:"))
+                {
+                    var skipSecretFetch = Environment.GetEnvironmentVariable("SKIP_LOCAL_SECRET_FETCH");
+                    if(!string.IsNullOrEmpty(skipSecretFetch) && skipSecretFetch.Equals("True"))
+                    {
+                        Console.WriteLine("Skip fetching Dev secret from KeyVault: " + valuePath);
+                        return "***skipped***";
+                    }
+                    else
+                    {
+                        Console.WriteLine("Fetching KeyVault secret: " + valuePath);
+                        var vals = valuePath.Split(':');
+                        if(vals.Length != 3)
+                        {
+                            throw new TemplateInstantiationException("### ERROR (DevTemplate): invalid number of parameters for secret: " + valuePath + " ###");
+                        }
+                        return GetKeyvaultSecret(repoconf, localrepoconf, commonrepoconf, solution, vals[1], vals[2]);
+                    }
+                }
+                else
+                {
+                    return GetRepoConfValue(repoconf, localrepoconf, commonrepoconf, valuePath, solution);
+                }
             };
 
-            string result = System.Text.RegularExpressions.Regex.Replace(template, "<#=\\s*([\\.\\w\\n\\t]*)\\s*#>", me, System.Text.RegularExpressions.RegexOptions.Singleline);
+            string result = System.Text.RegularExpressions.Regex.Replace(template, "<#=\\s*([\\.\\:\\w\\n\\t]*)\\s*#>", me, System.Text.RegularExpressions.RegexOptions.Singleline);
 		            
             // remove all values from cache dictionary
             JsonValues.Clear();
 
 		    return result;
+        }
+
+        private string GetKeyvaultSecret(JsonElement repoconf, JsonElement localrepoconf, JsonElement commonrepoconf, string solution, string kvPath, string secretNamePath)
+        {
+            string kv = GetRepoConfValue(repoconf, localrepoconf, commonrepoconf, kvPath, solution);
+            string secretName = GetRepoConfValue(repoconf, localrepoconf, commonrepoconf, secretNamePath, solution);
+
+            // use the users Powershell session to get keyvault secrets, user must be signed in for Az cmdlets
+            var result = ExecutePSCommand("(Get-AzContext).Account.Id");
+            if(String.IsNullOrEmpty(result.Trim()))
+            {
+                throw new TemplateInstantiationException("### ERROR (DevTemplate): Your PowerShell session must be signed in to Az Cmdlets to retrieve secrets on build ###");
+            }
+
+            string cmd = string.Format("(Get-AzKeyVaultSecret -VaultName {0} -Name {1}).SecretValueText", kv, secretName);
+            result = ExecutePSCommand(cmd);
+            if(String.IsNullOrEmpty(result.Trim()))
+            {
+                throw new TemplateInstantiationException("### ERROR (DevTemplate): Unable to retrieve secret: " + kv + ":" + secretName + " ###");
+            }
+            return result;
+        }
+
+        private string ExecutePSCommand(string command)
+        {
+            if(RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return ExecuteAuthenticatedPSCommandLinux(command);
+            }
+            else
+            {
+                return ExecuteAuthenticatedPSCommandWindows(command);
+            }
+        }
+
+        private string ExecuteAuthenticatedPSCommandWindows(string command)
+        {
+            using (Process myProcess = new Process())
+            {
+                var outputBuilder = new StringBuilder();
+
+                myProcess.StartInfo.UseShellExecute = false;
+                myProcess.StartInfo.FileName = "powershell.exe";
+                myProcess.StartInfo.Arguments = "-Command \"" + command + "\"";
+                myProcess.StartInfo.CreateNoWindow = true;
+                myProcess.StartInfo.RedirectStandardOutput = true;
+                myProcess.EnableRaisingEvents = true;
+                myProcess.OutputDataReceived += new DataReceivedEventHandler
+                    (
+                        delegate(object sender, DataReceivedEventArgs e)
+                        {
+                            // append the new data to the data already read-in
+                            outputBuilder.Append(e.Data);
+                        }
+                    );
+                myProcess.Start();
+                myProcess.BeginOutputReadLine();
+                myProcess.WaitForExit();
+                myProcess.CancelOutputRead();
+
+                return outputBuilder.ToString();
+            }
+        }
+
+        
+        private string ExecuteAuthenticatedPSCommandLinux(string command)
+        {
+            using (Process myProcess = new Process())
+            {
+                var outputBuilder = new StringBuilder();
+
+                myProcess.StartInfo.UseShellExecute = false;
+                myProcess.StartInfo.FileName = "pwsh";
+                myProcess.StartInfo.Arguments = "\"" + command + "\"";
+                myProcess.StartInfo.CreateNoWindow = true;
+                myProcess.StartInfo.RedirectStandardOutput = true;
+                myProcess.EnableRaisingEvents = true;
+                myProcess.OutputDataReceived += new DataReceivedEventHandler
+                    (
+                        delegate(object sender, DataReceivedEventArgs e)
+                        {
+                            // append the new data to the data already read-in
+                            outputBuilder.Append(e.Data);
+                        }
+                    );
+                myProcess.Start();
+                myProcess.BeginOutputReadLine();
+                myProcess.WaitForExit();
+                myProcess.CancelOutputRead();
+
+                return outputBuilder.ToString();
+            }
         }
 
         private string GetRepoConfValue(JsonElement repoconf, JsonElement localrepoconf, JsonElement commonrepoconf, string valuePath, string solution)

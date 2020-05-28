@@ -53,6 +53,10 @@ namespace Templating.BuildTask
                     foreach(var sln in solutions.EnumerateArray())
                     {
                         var solutionName = sln.s();
+                        if("false".Equals(repoconf.p("solutions").p(solutionName).p("build").s()))
+                        {
+                            continue;
+                        }
 
                         var outFileName = Path.Combine(this.outputPath, this.outFile);
                         outFileName = outFileName.Replace("{name}", templateName);

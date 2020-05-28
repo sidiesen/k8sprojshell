@@ -15,7 +15,7 @@
       </UnnormalizedTemplateFiles>
       <FilteredTemplateFiles
         Include="@(UnnormalizedTemplateFiles)"
-        Condition=" ( '%(Extension)' != '.tt' ) And ( @(UnnormalizedTemplateFiles) != '' ) ">
+        Condition=" '%(Extension)' != '.tt' ">
         <BaseDir>$([MsBuild]::NormalizeDirectory('%(UnnormalizedTemplateFiles.BaseDir)'))</BaseDir>
       </FilteredTemplateFiles>
     </ItemGroup>
@@ -29,6 +29,7 @@
       Templates="%(LocalizedTemplate.Identity)" 
       OutFile="%(LocalizedTemplate.OutFileName)"
       OutputPath="%(LocalizedTemplate.OutPath)" 
+      Solutions="%(LocalizedTemplate.Solutions)"
       Condition=" '@(LocalizedTemplate)' != '' " />
 
     <GenerateNonDevLocalizedTemplate 
@@ -60,11 +61,8 @@
       OutputPath="%(DevTemplate.OutPath)"
       Condition=" '@(DevTemplate)' != '' " />
     
-    <Message 
-      Importance="High" 
-      Text="%(FilteredTemplateFiles.Identity) -> %(FilteredTemplateFiles.OutPath)$([MSBuild]::MakeRelative(%(FilteredTemplateFiles.BasePath), %(FilteredTemplateFiles.BaseDir)))%(FilteredTemplateFiles.Filename)%(FilteredTemplateFiles.Extension)" 
-      Condition=" '@(FilteredTemplateFiles)' != '' " />
-      
+    <Message Importance="High" Text="%(FilteredTemplateFiles.Identity) -> %(FilteredTemplateFiles.OutPath)$([MSBuild]::MakeRelative(%(FilteredTemplateFiles.BasePath), %(FilteredTemplateFiles.BaseDir)))%(FilteredTemplateFiles.Filename)%(FilteredTemplateFiles.Extension)" />
+
     <Copy
       Condition=" '@(FilteredTemplateFiles)' != '' "
       SourceFiles="%(FilteredTemplateFiles.Identity)"

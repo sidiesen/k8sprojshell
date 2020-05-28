@@ -23,6 +23,9 @@
     * config.defaultSolution: `"MySolution"`
     * solutions:
         * contains a configuration object for every solution in the repo:
+            * build: Indicates whether an explicit build step is necessary. (e.g. a C# project will require an explicit build, while a set of python scripts might not.)
+            * dockerBuild: Indicates whether the component is a dockerized service and requires an explicit docker build.
+            * dockerfile: The name of the dockerfile used in the docker build step. This field is only mandatory if dockerBuild is set to true.
             * language: Currently supported languages:
                 * `csharp` - supported
                 * `go` - in progress
@@ -33,6 +36,8 @@
             
             ```
                 "MySolution": {
+                    "build": "false",
+                    "dockerBuild": "true",
                     "dockerfile": "Dockerfile",
                     "language": "csharp",
                     "deploymentname": "MySolutionDeployment",

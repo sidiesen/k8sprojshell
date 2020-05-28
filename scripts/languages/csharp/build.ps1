@@ -12,11 +12,6 @@ param (
 $RootDir = Join-Path $PSScriptRoot "..\..\..\.."
 
 $slnFile = Get-ChildItem -Path $RootDir\src\ -Name "*$Solution.sln" -Recurse
-# dotnet restore $slnFile
-# dotnet build "$RootDir\src\$slnFile" -c $Config
-# if(! $?) { 
-#     Write-Error "Failed to build \src\$slnFile."
-# }
 
 $outPath = Join-Path $OutDir (Get-Item $RootDir\src\$slnFile).BaseName
 dotnet publish "$RootDir\src\$slnFile" -c $Config -o $outPath

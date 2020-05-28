@@ -7,6 +7,8 @@
     },
     "solutions": {
         "<solution_name>": {
+            "build": "true",
+            "dockerBuild": "true",
             "dockerfile": "Dockerfile",
             "language": "csharp",
             "deploymentname": "<deployment_name>",

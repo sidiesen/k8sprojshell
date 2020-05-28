@@ -46,25 +46,28 @@ else {
 
 foreach($sln in $SolutionsToBuild)
 {
-    $slnLang = (Get-RepositoryConfigValue ".solutions.$sln.language")
-    if($slnLang -eq 'csharp')
+
+    if((Get-SolutionConfigValue ".solution.build" $sln) -eq "true") 
     {
-        $languageBuildScript = "$PSScriptRoot\languages\csharp\build.ps1"
-        Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
-    }
-    elseif($slnLang -eq 'go')
-    {
-        $languageBuildScript = "$PSScriptRoot\languages\go\build.ps1"
-        Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
-    }
-    else
-    {
-        Write-Error "'$slnLang' is an unknown build language! (Solution '$sln')"
-        Exit 1
+        $slnLang = (Get-RepositoryConfigValue ".solutions.$sln.language")
+        if($slnLang -eq 'csharp')
+        {
+            $languageBuildScript = "$PSScriptRoot\languages\csharp\build.ps1"
+            Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
+        }
+        elseif($slnLang -eq 'go')
+        {
+            $languageBuildScript = "$PSScriptRoot\languages\go\build.ps1"
+            Invoke-Expression "$languageBuildScript -Solution $sln -Config $Config -OutDir $OutDir"
+        }
+        else
+        {
+            Write-Error "'$slnLang' is an unknown build language! (Solution '$sln')"
+            Exit 1
+        }
     }
 }
 
-# todo: sathish do we need to enable ?
 # testsolution=`find / -name HybridCompute.sln`
 # echo "test $testsolution"
 # dotnet test $testsolution
